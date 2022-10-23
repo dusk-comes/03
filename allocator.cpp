@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <memory>
 #include <iostream>
 #include <vector>
@@ -14,22 +15,17 @@ struct Factorial<0>
     static const int value = 1;
 };
 
-template <typename T, size_t S>
+template <typename T>
 class Alloc
 {
     public:
         using value_type = T;
 
-        template<typename U, size_t S2>
-        struct rebind
-        {
-            using other = Alloc<U, S2>;
-        };
-
         Alloc();
+        Alloc(const size_t&);
 
-        template <typename U, size_t S2>
-        Alloc(const Alloc<U, S2>&) throw();
+        template <typename U>
+        Alloc(const Alloc<U>&) throw();
 
         T* allocate(const size_t);
         
@@ -40,15 +36,18 @@ class Alloc
         bool _reserved;
 };
 
-template <typename T, size_t S>
-Alloc<T, S>::Alloc() : _preallocated_slots{S}, _reserved{false} {}
+template <typename T>
+Alloc<T>::Alloc() {}
 
-template <typename T, size_t S1>
-template <typename U, size_t S2>
-Alloc<T, S1>::Alloc(const Alloc<U, S2> &alloc) throw() {}
+template <typename T>
+Alloc<T>::Alloc(const size_t &elements) : _preallocated_slots{elements}, _reserved{false} {}
 
-template <typename T, size_t S>
-T* Alloc<T, S>::allocate(const size_t elements)
+template <typename T>
+template <typename U>
+Alloc<T>::Alloc(const Alloc<U> &alloc) throw() {}
+
+template <typename T>
+T* Alloc<T>::allocate(const size_t elements)
 {
     if (!_reserved)
     {
@@ -60,29 +59,30 @@ T* Alloc<T, S>::allocate(const size_t elements)
     }
 }
 
-template <typename T, size_t S>
-void Alloc<T, S>::deallocate(T *p, size_t elements)
+template <typename T>
+void Alloc<T>::deallocate(T *p, size_t elements)
 {
     std::free(p);
 }
 
 template <class T, size_t S1, class U, size_t S2>
-constexpr bool operator==(const Alloc<T, S1>&, const Alloc<U, S2>&) noexcept
+constexpr bool operator==(const Alloc<T>&, const Alloc<U>&) noexcept
 {
     return false;
 }
 
-template <class T, size_t S1, class U, size_t S2>
-constexpr bool operator!=(const Alloc<T, S1>&, const Alloc<U, S2>&) noexcept
+template <class T, class U>
+constexpr bool operator!=(const Alloc<T>&, const Alloc<U>&) noexcept
 {
     return false;
 }
 
 int main()
 {
-    std::vector<int, Alloc<int, 10>> v;
-    for (auto i = 0; i < v.size(); ++i)
-        v.push_back(i);
+    Alloc<int> alloc(10);
+    std::vector<int, Alloc<int>> v(10, alloc);
+    //for (auto i = 0; i < v.size(); ++i)
+    //    v.push_back(i);
 
     /*
     for (auto i = 0; i < v.size(); ++i)
