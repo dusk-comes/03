@@ -1,7 +1,9 @@
 #include <cstddef>
 #include <memory>
 #include <iostream>
+#include <utility>
 #include <vector>
+#include <map>
 
 template <int P>
 struct Factorial
@@ -15,7 +17,7 @@ struct Factorial<0>
     static const int value = 1;
 };
 
-template <typename T>
+template <typename T, typename... Args>
 class Alloc
 {
     public:
@@ -26,7 +28,7 @@ class Alloc
         Alloc(const size_type&);
 
         template <typename U>
-        Alloc(const Alloc<U>&) throw();
+        Alloc(const Alloc<U, Args...>&) throw();
 
         T* allocate(const size_type&);
         
@@ -38,18 +40,18 @@ class Alloc
         size_type _preallocated_slots;
 };
 
-template <typename T>
-Alloc<T>::Alloc() {}
+template <typename T, typename... Args>
+Alloc<T, Args...>::Alloc() {}
 
-template <typename T>
-Alloc<T>::Alloc(const Alloc::size_type &elements) : _preallocated_slots{elements} {}
+template <typename T, typename... Args>
+Alloc<T, Args...>::Alloc(const Alloc::size_type &elements) : _preallocated_slots{elements} {}
 
-template <typename T>
+template <typename T, typename... Args>
 template <typename U>
-Alloc<T>::Alloc(const Alloc<U> &alloc) throw() {}
+Alloc<T, Args...>::Alloc(const Alloc<U, Args...> &alloc) throw() {}
 
-template <typename T>
-T* Alloc<T>::allocate(const Alloc::size_type &elements)
+template <typename T, typename... Args>
+T* Alloc<T, Args...>::allocate(const Alloc::size_type &elements)
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
     auto *p = std::malloc(elements * sizeof(T));
@@ -60,26 +62,26 @@ T* Alloc<T>::allocate(const Alloc::size_type &elements)
     return reinterpret_cast<T*>(p);
 }
 
-template <typename T>
-void Alloc<T>::deallocate(T *p, Alloc::size_type elements)
+template <typename T, typename... Args>
+void Alloc<T, Args...>::deallocate(T *p, Alloc::size_type elements)
 {
     std::free(p);
 }
 
-template <typename T>
-typename Alloc<T>::size_type Alloc<T>::max_size() const
+template <typename T, typename... Args>
+typename Alloc<T, Args...>::size_type Alloc<T, Args...>::max_size() const
 {
     return _preallocated_slots;
 }
 
-template <class T, class U>
-constexpr bool operator==(const Alloc<T>&, const Alloc<U>&) noexcept
+template <class T, class U, typename... Args>
+constexpr bool operator==(const Alloc<T, Args...>&, const Alloc<U, Args...>&) noexcept
 {
     return false;
 }
 
-template <class T, class U>
-constexpr bool operator!=(const Alloc<T>&, const Alloc<U>&) noexcept
+template <class T, class U, typename... Args>
+constexpr bool operator!=(const Alloc<T, Args...>&, const Alloc<U, Args...>&) noexcept
 {
     return false;
 }
@@ -92,6 +94,10 @@ int main()
     {
         v.push_back(i);
     }
+
+    Alloc<std::pair<int, int>> map_alloc(4);
+    std::map<int, int, std::less<int>, Alloc<std::pair<int, int>>> m(map_alloc);
+    m[1] = 666;
         
     return 0;
 }
