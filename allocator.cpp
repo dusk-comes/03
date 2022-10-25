@@ -17,7 +17,7 @@ struct Factorial<0>
     static const int value = 1;
 };
 
-template <int S, typename T, typename... Args>
+template <int S, typename T>
 class Alloc
 {
     public:
@@ -27,7 +27,7 @@ class Alloc
         Alloc();
 
         template <typename U>
-        Alloc(const Alloc<S, U, Args...>&) throw();
+        Alloc(const Alloc<S, U>&) throw();
 
         T* allocate(const size_type&);
         
@@ -41,20 +41,20 @@ class Alloc
         void* _memory_begin;
 };
 
-template <int S, typename T, typename... Args>
-Alloc<S, T, Args...>::Alloc() :
+template <int S, typename T>
+Alloc<S, T>::Alloc() :
     _reserved_slots{S},
     _used{0},
     _memory_begin{nullptr}
 {
 }
 
-template <int S, typename T, typename... Args>
+template <int S, typename T>
 template <typename U>
-Alloc<S, T, Args...>::Alloc(const Alloc<S, U, Args...> &) throw() {}
+Alloc<S, T>::Alloc(const Alloc<S, U> &) throw() {}
 
-template <int S, typename T, typename... Args>
-T* Alloc<S, T, Args...>::allocate(const Alloc::size_type &elements)
+template <int S, typename T>
+T* Alloc<S, T>::allocate(const Alloc::size_type &elements)
 {
     if (_memory_begin == nullptr)
     {
@@ -72,37 +72,37 @@ T* Alloc<S, T, Args...>::allocate(const Alloc::size_type &elements)
     return reinterpret_cast<T*>(_memory_begin);
 }
 
-template <int S, typename T, typename... Args>
-void Alloc<S, T, Args...>::deallocate(T *p, Alloc::size_type)
+template <int S, typename T>
+void Alloc<S, T>::deallocate(T *p, Alloc::size_type)
 {
     std::free(p);
 }
 
-template <int S, typename T, typename... Args>
-typename Alloc<S, T, Args...>::size_type Alloc<S, T, Args...>::max_size() const
+template <int S, typename T>
+typename Alloc<S, T>::size_type Alloc<S, T>::max_size() const
 {
     return _reserved_slots;
 }
 
-template <int S, class T, class U, typename... Args>
-constexpr bool operator==(const Alloc<S, T, Args...>&, const Alloc<S, U, Args...>&) noexcept
+template <int S, class T, class U>
+constexpr bool operator==(const Alloc<S, T>&, const Alloc<S, U>&) noexcept
 {
     return false;
 }
 
-template <int S, class T, class U, typename... Args>
-constexpr bool operator!=(const Alloc<S, T, Args...>&, const Alloc<S, U, Args...>&) noexcept
+template <int S, class T, class U>
+constexpr bool operator!=(const Alloc<S, T>&, const Alloc<S, U>&) noexcept
 {
     return false;
 }
 
 int main()
 {
-    std::map<int, int, std::less<int>, Alloc<4, std::pair<int, int>>> m;
+    std::map<int, int, std::less<int>, Alloc<4, std::pair<const int, int>>> m;
     std::cout << "start to fill" << std::endl;
     m[1] = 1;
-    //m[2] = 2;
-    //m[3] = 3;
+    m[2] = 2;
+    m[3] = 3;
         
     return 0;
 }
