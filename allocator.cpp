@@ -24,6 +24,12 @@ class Alloc
         using value_type = T;
         using size_type = size_t;
 
+        template <typename U>
+        struct rebind
+        {
+            using other = Alloc<S, U>;
+        };
+
         Alloc();
 
         template <typename U>
