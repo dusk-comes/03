@@ -1,9 +1,9 @@
 #include <cstddef>
-#include <memory>
-#include <iostream>
+#include <cstdlib>
+#include <new>
 #include <utility>
-#include <vector>
 #include <map>
+#include <iostream>
 
 template <int P>
 struct Factorial
@@ -37,33 +37,47 @@ class Alloc
         size_type max_size() const;
 
     private:
-        size_type _preallocated_slots;
+        size_type _reserved_slots;
+        size_type _used;
+        void* _memory_begin;
 };
 
 template <typename T, typename... Args>
 Alloc<T, Args...>::Alloc() {}
 
 template <typename T, typename... Args>
-Alloc<T, Args...>::Alloc(const Alloc::size_type &elements) : _preallocated_slots{elements} {}
+Alloc<T, Args...>::Alloc(const Alloc::size_type &elements) :
+    _reserved_slots{elements},
+    _used{0},
+    _memory_begin{nullptr}
+{
+}
 
 template <typename T, typename... Args>
 template <typename U>
-Alloc<T, Args...>::Alloc(const Alloc<U, Args...> &alloc) throw() {}
+Alloc<T, Args...>::Alloc(const Alloc<U, Args...> &) throw() {}
 
 template <typename T, typename... Args>
 T* Alloc<T, Args...>::allocate(const Alloc::size_type &elements)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
-    auto *p = std::malloc(elements * sizeof(T));
-    if (!p) throw std::bad_alloc();
-
-    std::cout << "allocated " << elements << " ellements at " << &p << std::endl;
-
-    return reinterpret_cast<T*>(p);
+    if (_memory_begin == nullptr)
+    {
+        _memory_begin = std::malloc(sizeof(T) * _reserved_slots);
+        _used = elements;
+    }
+    else if (_used + elements < _reserved_slots)
+    {
+        _used += elements;
+    }
+    else
+    {
+        throw std::bad_alloc();
+    }
+    return reinterpret_cast<T*>(_memory_begin);
 }
 
 template <typename T, typename... Args>
-void Alloc<T, Args...>::deallocate(T *p, Alloc::size_type elements)
+void Alloc<T, Args...>::deallocate(T *p, Alloc::size_type)
 {
     std::free(p);
 }
@@ -71,7 +85,7 @@ void Alloc<T, Args...>::deallocate(T *p, Alloc::size_type elements)
 template <typename T, typename... Args>
 typename Alloc<T, Args...>::size_type Alloc<T, Args...>::max_size() const
 {
-    return _preallocated_slots;
+    return _reserved_slots;
 }
 
 template <class T, class U, typename... Args>
@@ -88,16 +102,12 @@ constexpr bool operator!=(const Alloc<T, Args...>&, const Alloc<U, Args...>&) no
 
 int main()
 {
-    Alloc<int> alloc(3);
-    std::vector<int, Alloc<int>> v(alloc);
-    for (auto i = 0; i < 3; ++i)
-    {
-        v.push_back(i);
-    }
-
     Alloc<std::pair<int, int>> map_alloc(4);
     std::map<int, int, std::less<int>, Alloc<std::pair<int, int>>> m(map_alloc);
-    m[1] = 666;
+    std::cout << "start to fill" << std::endl;
+    m[1] = 1;
+    //m[2] = 2;
+    //m[3] = 3;
         
     return 0;
 }
