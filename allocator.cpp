@@ -17,7 +17,7 @@ struct Factorial<0>
     static const int value = 1;
 };
 
-template <typename T, typename... Args>
+template <int S, typename T, typename... Args>
 class Alloc
 {
     public:
@@ -25,10 +25,9 @@ class Alloc
         using size_type = size_t;
 
         Alloc();
-        Alloc(const size_type&);
 
         template <typename U>
-        Alloc(const Alloc<U, Args...>&) throw();
+        Alloc(const Alloc<S, U, Args...>&) throw();
 
         T* allocate(const size_type&);
         
@@ -42,23 +41,20 @@ class Alloc
         void* _memory_begin;
 };
 
-template <typename T, typename... Args>
-Alloc<T, Args...>::Alloc() {}
-
-template <typename T, typename... Args>
-Alloc<T, Args...>::Alloc(const Alloc::size_type &elements) :
-    _reserved_slots{elements},
+template <int S, typename T, typename... Args>
+Alloc<S, T, Args...>::Alloc() :
+    _reserved_slots{S},
     _used{0},
     _memory_begin{nullptr}
 {
 }
 
-template <typename T, typename... Args>
+template <int S, typename T, typename... Args>
 template <typename U>
-Alloc<T, Args...>::Alloc(const Alloc<U, Args...> &) throw() {}
+Alloc<S, T, Args...>::Alloc(const Alloc<S, U, Args...> &) throw() {}
 
-template <typename T, typename... Args>
-T* Alloc<T, Args...>::allocate(const Alloc::size_type &elements)
+template <int S, typename T, typename... Args>
+T* Alloc<S, T, Args...>::allocate(const Alloc::size_type &elements)
 {
     if (_memory_begin == nullptr)
     {
@@ -76,34 +72,33 @@ T* Alloc<T, Args...>::allocate(const Alloc::size_type &elements)
     return reinterpret_cast<T*>(_memory_begin);
 }
 
-template <typename T, typename... Args>
-void Alloc<T, Args...>::deallocate(T *p, Alloc::size_type)
+template <int S, typename T, typename... Args>
+void Alloc<S, T, Args...>::deallocate(T *p, Alloc::size_type)
 {
     std::free(p);
 }
 
-template <typename T, typename... Args>
-typename Alloc<T, Args...>::size_type Alloc<T, Args...>::max_size() const
+template <int S, typename T, typename... Args>
+typename Alloc<S, T, Args...>::size_type Alloc<S, T, Args...>::max_size() const
 {
     return _reserved_slots;
 }
 
-template <class T, class U, typename... Args>
-constexpr bool operator==(const Alloc<T, Args...>&, const Alloc<U, Args...>&) noexcept
+template <int S, class T, class U, typename... Args>
+constexpr bool operator==(const Alloc<S, T, Args...>&, const Alloc<S, U, Args...>&) noexcept
 {
     return false;
 }
 
-template <class T, class U, typename... Args>
-constexpr bool operator!=(const Alloc<T, Args...>&, const Alloc<U, Args...>&) noexcept
+template <int S, class T, class U, typename... Args>
+constexpr bool operator!=(const Alloc<S, T, Args...>&, const Alloc<S, U, Args...>&) noexcept
 {
     return false;
 }
 
 int main()
 {
-    Alloc<std::pair<int, int>> map_alloc(4);
-    std::map<int, int, std::less<int>, Alloc<std::pair<int, int>>> m(map_alloc);
+    std::map<int, int, std::less<int>, Alloc<4, std::pair<int, int>>> m;
     std::cout << "start to fill" << std::endl;
     m[1] = 1;
     //m[2] = 2;
