@@ -1,31 +1,42 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 set(gcc_lik_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
 set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
 
-project(allocator VERSION ${PROJECT_VERSION})
+project(homework-3 VERSION ${PROJECT_VERSION})
+option(WITH_CATCH_TEST "Whether to build Catch2 test" ON)
 
-file(COPY ${RESOURCE_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+add_executable(main main.cpp allocator.hpp)
 
-add_executable(allocator allocator.cpp)
-
-set_target_properties(allocator PROPERTIES
+set_target_properties(main PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON)
 
-if (MSVC)
-    target_compile_options(allocator PRIVATE
-        /W4
-    )
-else ()
-    target_compile_options(allocator PRIVATE
-        -Wall -Wextra -pedantic -Werror -g
-    )
+if(WITH_CATCH2_TEST)
+    add_executable(test_alloc test_allocator.cpp)
+
+    set_target_properties(test_alloc PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON)
+
+    add_library(Catch INTERFACE)
+
+    enable_testing()
+    add_test(test_alloc test_alloc)
+
 endif()
 
-install(TARGETS allocator RUNTIME DESTINATION bin)
+target_compile_options(main PUBLIC
+    $<$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>:-Wall -Wextra -pedantic -Werror -g>
+    $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:-W4>)
+
+target_compile_options(test_alloc PUBLIC
+    $<$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>:-Wall -Wextra -pedantic -Werror>
+    $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:-W4>)
+
+install(TARGETS main RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
