@@ -3,28 +3,21 @@
 #include <iostream>
 #include "allocator.hpp"
 
-template <int P>
-struct Factorial
+int factorial(int i)
 {
-    static const int value = P * Factorial<P - 1>::value;
-};
-
-template <>
-struct Factorial<0>
-{
-    static const int value = 1;
-};
+    return (i == 0) ? 1 : factorial(i-1);
+}
 
 
 int main()
 {
-    std::map<int, int, std::less<int>, Alloc<4, std::pair<const int, int>>> m;
-    std::cout << "start to fill" << std::endl;
-    m[1] = Factorial<1>::value;
-    m[2] = Factorial<2>::value;
-    m[3] = Factorial<3>::value;
-    m[4] = Factorial<4>::value;
-    //m[5] = Factorial<5>::value; Allocator throw the error here
+    std::map<int, int> m1;
+    for (int i = 0; i < 10; ++i)
+        m1[i] = factorial(i);
+
+    std::map<int, int, std::less<int>, Alloc<10, std::pair<const int, int>>> m2;
+    for (int i = 0; i < 10; ++i)
+        m2[i] = factorial(i);
         
     return 0;
 }

@@ -1,6 +1,19 @@
 #include <cstddef>
 #include <cstdlib>
 #include <new>
+#include <iostream>
+
+template <typename M>
+struct Block
+{
+    M *start;
+    size_t end;
+
+    ~Block()
+    {
+        std::free(start);
+    }
+};
 
 template <int S, typename T>
 class Alloc
@@ -28,25 +41,20 @@ class Alloc
         size_type max_size() const;
 
     private:
-        T *_memory_begin;
-        T *_memory_end;
-        T *_memory_used;
+        Block<T> mem;
+        size_type offset;
 };
 
 template <int S, typename T>
 Alloc<S, T>::Alloc() :
-    _memory_begin{nullptr},
-    _memory_end{nullptr},
-    _memory_used{nullptr}
+    mem{nullptr, 0},
+    offset{0}
 {
 }
 
 template <int S, typename T>
 Alloc<S, T>::~Alloc()
 {
-    std::free(_memory_begin);
-    _memory_used = nullptr;
-    _memory_end = nullptr;
 }
 
 
@@ -59,26 +67,25 @@ T* Alloc<S, T>::allocate(const Alloc::size_type &elements)
 {
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 
-    if (_memory_begin == nullptr)
+    if (mem.start == nullptr)
     {
-        _memory_begin = reinterpret_cast<T*>(std::malloc(sizeof(T) * S));
-        _memory_used = _memory_begin;
-        _memory_end = _memory_begin + S * sizeof(T);
+        mem.start = reinterpret_cast<T*>(std::malloc(sizeof(T) * S));
+        mem.end = S;
 
-        std::cout << "_memory_begin at " << &_memory_begin << std::endl;
-        std::cout << "_memory_end at " << &_memory_end << std::endl;
+        std::cout << "_memory_begin at " << mem.start << std::endl;
+        std::cout << "_memory_end at " << &(mem.start[0]) << std::endl;
     }
-    else if (_memory_used + elements * sizeof(T) < _memory_end)
+    else if (offset + elements < mem.end)
     {
-        _memory_used += elements * sizeof(T);
+        offset += elements;
     }
     else
     {
         throw std::bad_alloc();
     }
 
-    std::cout << "_memory_used at " << &_memory_used << std::endl;
-    return _memory_used;
+    std::cout << "_memory_used at " << &mem.start[offset] << std::endl;
+    return &mem.start[offset];
 }
 
 template <int S, typename T>
