@@ -21,7 +21,7 @@ TEST_CASE( "map<int, int> uses custom allocator", "[map<int, int>]" )
 TEST_CASE( "map<int, string> uses custom allocator", "[map<int, string>]" )
 {
 
-    using alloc = Alloc<10, std::_Rb_tree_node<std::pair<const int, int> >>;
+    using alloc = Alloc<10, std::pair<const int, std::string>>;
     std::map<int, std::string, std::less<>, alloc> m;
     m[1] = "one";
     m[2] = "two";
@@ -37,7 +37,7 @@ TEST_CASE( "map<int, string> uses custom allocator", "[map<int, string>]" )
     REQUIRE(m.at(1) == "one");
     REQUIRE(m.at(2) == "two");
     REQUIRE(m.at(3) == "three");
-    REQUIRE(m.at(3) == "four");
+    REQUIRE(m.at(4) == "four");
     REQUIRE(m.at(5) == "five");
     REQUIRE(m.at(6) == "six");
     REQUIRE(m.at(7) == "seven");
