@@ -1,5 +1,4 @@
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 #include "allocator.hpp"
 #include <map>
@@ -15,7 +14,7 @@ TEST_CASE( "map<int, int> uses custom allocator", "[map<int, int>]" )
     for (auto i = 0; i < 10; ++i)
         REQUIRE(m.at(i) == i);
 
-    REQUIRE_THROWS_AS(m[11], const std::bad_alloc&);
+    REQUIRE_THROWS_AS(m[11], std::bad_alloc);
 }
 
 TEST_CASE( "map<int, string> uses custom allocator", "[map<int, string>]" )
@@ -45,6 +44,6 @@ TEST_CASE( "map<int, string> uses custom allocator", "[map<int, string>]" )
     REQUIRE(m.at(9) == "nine");
     REQUIRE(m.at(10) == "ten");
 
-    REQUIRE_THROWS_AS(m[11], const std::bad_alloc&);
+    REQUIRE_THROWS_AS(m[11], std::bad_alloc);
 }
 

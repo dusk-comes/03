@@ -14,17 +14,25 @@ set_target_properties(main PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON)
 
-if(WITH_CATCH2_TEST)
-    add_executable(test_alloc test_allocator.cpp)
+if(WITH_CATCH_TEST)
+    find_package(Catch2 REQUIRED)
 
-    set_target_properties(test_alloc PROPERTIES
+    add_executable(tests test_list.cpp test_allocator.cpp)
+
+    target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+
+    set_target_properties(tests PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON)
 
-    add_library(Catch INTERFACE)
+    target_compile_options(tests PUBLIC
+        $<$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>:-Wall -Wextra -pedantic -Werror>
+        $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:-W4>)
 
     enable_testing()
-    add_test(test_alloc test_alloc)
+
+    add_test(tests tests)
+
 
 endif()
 
@@ -32,9 +40,6 @@ target_compile_options(main PUBLIC
     $<$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>:-Wall -Wextra -pedantic -Werror -g>
     $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:-W4>)
 
-target_compile_options(test_alloc PUBLIC
-    $<$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>:-Wall -Wextra -pedantic -Werror>
-    $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:-W4>)
 
 install(TARGETS main RUNTIME DESTINATION bin)
 
