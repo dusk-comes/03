@@ -18,8 +18,7 @@ class List
 {
     public:
         using pointer = std::shared_ptr<Link<T>>;
-        using allocator_type = A;
-        using alloc_traits = std::allocator_traits<allocator_type>;
+        using allocator_type = typename std::allocator_traits<A>::template rebind_alloc<Link<T>>;
 
         List();
 
@@ -53,6 +52,7 @@ class List
         pointer last;
         pointer first;
         size_t _size;
+        allocator_type alloc;
 
 };
 
@@ -68,7 +68,8 @@ template <typename T, typename A>
 typename List<T,A>::pointer
     List<T, A>::push_back(const T &val)
 {
-    auto link = std::make_shared<Link<T>>(val);
+    pointer link(alloc.allocate(1));
+    alloc.construct(link.get(), val);
 
     if (last == nullptr)
     {
