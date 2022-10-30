@@ -14,3 +14,17 @@ TEST_CASE("fill list of int")
     REQUIRE(head->next->next->val == 3);
 }
 
+TEST_CASE("iterate over list")
+{
+    List<int> l;
+
+    for (int i = 1; i < 4; ++i) l.push_back(i);
+
+    REQUIRE(l.size() == 3);
+
+    int expected = 1;
+    for (auto it = l.begin(); it != l.end(); ++it)
+    {
+        REQUIRE(expected++ == *it);
+    }
+}
