@@ -2,7 +2,7 @@
 
 #include "list.hpp"
 
-TEST_CASE( "fill list of int", "[list<int>]" )
+TEST_CASE("fill list of int")
 {
     List<int> l;
     auto head = l.push_back(1);

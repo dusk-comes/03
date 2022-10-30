@@ -5,7 +5,7 @@
 #include <string>
 #include <new>
 
-TEST_CASE( "map<int, int> uses custom allocator", "[map<int, int>]" )
+TEST_CASE("map<int, int> uses custom allocator")
 {
     std::map<int, int, std::less<>, Alloc<10, std::pair<const int, int>>> m;
     for (auto i = 0; i < 10; ++i)
@@ -17,7 +17,7 @@ TEST_CASE( "map<int, int> uses custom allocator", "[map<int, int>]" )
     REQUIRE_THROWS_AS(m[11], std::bad_alloc);
 }
 
-TEST_CASE( "map<int, string> uses custom allocator", "[map<int, string>]" )
+TEST_CASE("map<int, string> uses custom allocator")
 {
 
     using alloc = Alloc<10, std::pair<const int, std::string>>;
