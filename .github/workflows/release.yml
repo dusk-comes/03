@@ -14,6 +14,7 @@ jobs:
           submodules: true
       - run: cmake . -DPATCH_VERSION=${{ github.run_number }} -DWITH_CATCH_TEST=OFF
       - run: cmake --build .
+      - run: make ./main
         #- run: cmake --build . --target test
         #- run: cmake --build . --target package
       - name: Create Release
