@@ -6,7 +6,7 @@
 
 int factorial(int i)
 {
-    return (i == 0) ? 1 : factorial(i-1);
+    return (i == 0) ? 1 : i * factorial(i-1);
 }
 
 
