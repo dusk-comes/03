@@ -73,7 +73,7 @@ T* Alloc<S, T>::allocate(const Alloc::size_type &elements)
         mem.end = S;
 
         std::cout << "_memory_begin at " << mem.start << std::endl;
-        std::cout << "_memory_end at " << &(mem.start[0]) << std::endl;
+        std::cout << "_memory_end at " << &(mem.start[S]) << std::endl;
     }
     else if (offset + elements < mem.end)
     {
