@@ -29,7 +29,7 @@ int main()
     for (int i = 0; i < 10; ++i)
         l1.push_back(i);
 
-    List<int, Alloc<10, int>> l2;
+    List<int, Alloc<10, Link<int>>> l2;
     for (int i = 0; i < 10; ++i)
         l2.push_back(i);
 

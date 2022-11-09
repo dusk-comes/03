@@ -5,24 +5,27 @@
 template <typename Elem>
 struct Link
 {
-    using pointer = std::shared_ptr<Link<Elem>>;
+    using pointer = Link<Elem>*;
 
     Elem val;
     pointer next;
 
     Link(Elem e, pointer p = nullptr) : val{e}, next{p} {}
+    ~Link() {}
 };
 
-template <typename T, typename A = std::allocator<T>>
+template <typename T, typename A = std::allocator<Link<T>>>
 class List
 {
     public:
-        using pointer = std::shared_ptr<Link<T>>;
-        using allocator_type = typename std::allocator_traits<A>::template rebind_alloc<Link<T>>;
+        using pointer = Link<T>*;
+        using allocator_type = A;
+        using allocator_traits = std::allocator_traits<allocator_type>;
 
         List();
+        ~List();
 
-        pointer push_back(const T &val);
+        void push_back(const T &val);
         
         size_t size() const { return _size; }
 
@@ -53,6 +56,7 @@ class List
         pointer first;
         size_t _size;
         allocator_type alloc;
+        allocator_traits alloc_t;
 
 };
 
@@ -64,12 +68,16 @@ List<T, A>::List() :
 {
 }
 
-template <typename T, typename A>
-typename List<T,A>::pointer
-    List<T, A>::push_back(const T &val)
+template<typename T, typename A>
+List<T, A>::~List()
 {
-    pointer link(alloc.allocate(1));
-    alloc.construct(link.get(), val);
+}
+
+template <typename T, typename A>
+void List<T, A>::push_back(const T &val)
+{
+    Link<int> *link = alloc.allocate(1);
+    alloc_t.construct(alloc, link, val);
 
     if (last == nullptr)
     {
@@ -83,6 +91,4 @@ typename List<T,A>::pointer
     }
 
     ++_size;
-    
-    return link;
 }
