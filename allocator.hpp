@@ -3,6 +3,12 @@
 #include <new>
 #include <iostream>
 
+#if DEBUG == 1
+    #define PRINT(key, value) (std::cout << key << " : " << value << std::endl)
+#else
+    #define PRINT(...) do {} while(0)
+#endif
+
 template <typename M>
 struct Block
 {
@@ -65,15 +71,13 @@ Alloc<S, T>::Alloc(const Alloc<S, U> &) throw() {}
 template <int S, typename T>
 T* Alloc<S, T>::allocate(const Alloc::size_type &elements)
 {
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
-
     if (mem.start == nullptr)
     {
         mem.start = reinterpret_cast<T*>(std::malloc(sizeof(T) * S));
         mem.end = S;
 
-        std::cout << "_memory_begin at " << mem.start << std::endl;
-        std::cout << "_memory_end at " << &(mem.start[S]) << std::endl;
+        PRINT("_memory_begin at ", mem.start);
+        PRINT("_memory_end at ", &(mem.start[S]));
     }
     else if (offset + elements < mem.end)
     {
@@ -84,7 +88,8 @@ T* Alloc<S, T>::allocate(const Alloc::size_type &elements)
         throw std::bad_alloc();
     }
 
-    std::cout << "_memory_used at " << &mem.start[offset] << std::endl;
+    PRINT("_memory_used at ", &mem.start[offset]);
+
     return &mem.start[offset];
 }
 

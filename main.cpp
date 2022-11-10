@@ -27,11 +27,11 @@ int main()
         
     List<int> l1;
     for (int i = 0; i < 10; ++i)
-        l1.push_back(i);
+        l1.push_back(factorial(i));
 
     List<int, Alloc<10, Link<int>>> l2;
     for (int i = 0; i < 10; ++i)
-        l2.push_back(i);
+        l2.push_back(factorial(i));
 
     for(auto it = l2.begin(); it != l2.end(); ++it)
         std::cout << *it << std::endl;
