@@ -6,7 +6,7 @@
 template <typename Elem>
 struct Link
 {
-    using pointer = std::shared_ptr<Link<Elem>>;
+    using pointer = Link<Elem>*;
 
     Elem val;
     pointer next;
@@ -18,7 +18,7 @@ template <typename T, typename A = std::allocator<Link<T>>>
 class List
 {
     public:
-        using pointer = std::shared_ptr<Link<T>>;
+        using pointer = Link<T>*;
         using allocator_type = A;
         using allocator_traits = std::allocator_traits<allocator_type>;
 
@@ -71,7 +71,7 @@ template <typename T, typename A>
 void List<T, A>::push_back(const T &val)
 {
     pointer link(alloc.allocate(1));
-    alloc_t.construct(alloc, link.get(), val);
+    alloc_t.construct(alloc, link, val);
 
     if (last == nullptr)
     {
